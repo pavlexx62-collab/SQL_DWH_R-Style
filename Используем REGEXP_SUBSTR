@@ -1,0 +1,9 @@
+select * 
+from dwh.fct_account_attr a
+join dwh.det_typeaccattr t on a.id_typeattr = t.id_typeattr 
+where regexp_substr(t.code,'[^#]+',1,4)='BRANCH_ID' 
+and a.id_account in (
+123,
+321
+) 
+order by a.id_account, a.id_typeattr,a.dt_open
