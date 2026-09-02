@@ -1,0 +1,13 @@
+select DECODE (tao.TAOBJSTATUS,1,'2',2,'3',3,'1',4,'4',5,'5',6,'6',9,'7') n, ta.activationmoment,o.code,o1.name,
+DECODE(tao.TAOBJSTATUS,1,'Готово к обработки',2,'В ожидании предыдущих',3,'в ПРОЦЕССЕ',4,'ОБРАБОТАННО ОК',5,'ошибка',6,'ошибка в предыдущих',9,'прерванно') STATUS_______,
+to_date(substr(tao.startmoment,0,17),'DD.MM.YYYY HH24:MI:SS')startmoment,
+to_date(substr(tao.finishmoment,0,17),'DD.MM.YYYY HH24:MI:SS')finishmoment,
+nvl2(tao.finishmoment, extract(hour from nvl(tao.finishmoment, sysdate) - tao.startmoment) ||':'|| extract(minute from nvl(tao.finishmoment, sysdate) - tao.startmoment)||':'||
+trunc(extract(second from nvl(tao.finishmoment, sysdate) - tao.startmoment)),'') as duration
+from dwh.que_taobject tao join dwh.que_taskactivation ta on tao.id_taskactivation = ta.id_taskactivation, dwh.srp_object o, dwh.srp_object o1 where tao.id_queueobject=o.id_object
+and o.code = upper('QP_FCT_PROCRATE_DEAL') --------- добавляем требуемый загрузчик 
+and ta.id_task = o1.id_object
+and ta.activationmoment > (sysdate - 2)  ----- глубина по дате 
+and tao.id_taskactivation not in
+(select taol.id_taskactivation from dwh.que_taobject taol where taol.startmoment > (sysdate -2) and taol.taobjstatus = 9)
+order by n
