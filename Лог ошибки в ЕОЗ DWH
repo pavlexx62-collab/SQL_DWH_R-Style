@@ -1,0 +1,9 @@
+--лог ошибок
+select --+parallel(4)
+ta.queuedate,
+  (select o.name from dwh.srp_object o where o.id_object=ta.id_task) NAME_TASK,
+  (select o.code from dwh.srp_object o where o.id_object=ta.id_task) CODE_TASK,
+  (select o.code from dwh.srp_object o where o.id_object=z.id_userobject) CODE_PROCESS,
+  z.text,z.moment
+from dwh.bcl_qologitemrow z join dwh.que_taskactivation ta on z.id_taskactivation = ta.id_taskactivation
+where ta.queuedate > (sysdate -4) and z.status = 2 order by z.moment desc
