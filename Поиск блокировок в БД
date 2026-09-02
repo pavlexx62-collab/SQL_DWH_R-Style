@@ -1,0 +1,2 @@
+select * from Gv$lock
+where id1 in  ( select object_id from dba_objects where lower(object_name) like lower('%DM_DEAL%'));
