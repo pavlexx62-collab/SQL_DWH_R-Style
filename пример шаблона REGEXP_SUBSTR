@@ -1,0 +1,2 @@
+ ---------  если требуется заменить лайк
+  select regexp_substr('ABtVGDtxt123x4','txt') from dual
