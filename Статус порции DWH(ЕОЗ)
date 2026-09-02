@@ -1,0 +1,7 @@
+--- Регистрация порции
+select w.id_registereddata, q.code, w.regmoment, w.extblockinfo,w.rdloadstatus,
+DECODE (w.rdloadstatus,1,'не загружено',2,'Загруженно в шлюз',3,'Загружено в хранилище',4,'шлюз-хранилище') STATUS
+from dwh.ldr_registereddata w join dwh.srp_object q on q.id_object=w.id_source
+where 
+w.extblockinfo in ('0000#BISQUIT#2#20110812#B0#1889037#415' ) --- проверяем по ЭКСфаилу
+--and w.id_registereddata in ('') ---- проверяем по АЙДИфайлу
