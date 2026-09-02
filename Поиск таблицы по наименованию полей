@@ -1,0 +1,3 @@
+ select  * from dba_tab_columns ss where /*ss.TABLE_NAME = 'FCT_SUBJECT_ROLEDEAL' and*/ COLUMN_NAME like 'SUBJECT_CODE' and OWNER like '%SOFR%'
+ and ss.TABLE_NAME not like '%INC%'
+ and ss.TABLE_NAME not like '%PRE%'
