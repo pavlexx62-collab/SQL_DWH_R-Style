@@ -1,0 +1,28 @@
+With PPP as (
+select column_value from
+table(sys.odcivarchar2list(
+'1-1WV3KGB',
+'1-2JXZ8UL',
+'1-2KPNE9K',
+'1-2KU2C25',
+'1-2KU2C28',
+'1-2L0FDR3',
+'1-2KU2C22',
+'1-2KU2C0V',
+'1-2JT5ZI9',
+'1-2DYMGHT',
+'1-2DYMG1C',
+'1-2DYLNEG',
+'1-2DYLF54',
+'1-2CHKVVX',
+'1-2CHKVT6',
+'1-2CHKHDJ',
+'1-24V6AHF',
+'1-24V3Q3H',
+'1-24J1TEF',
+'1-24IY05I',
+'1-24IXTBW'
+))
+order by column_value)
+
+Select p.*,acrm.* from ppp p left join TSC_STAGE_ACTION acrm on p.ROW_ID = ACRM.ROW_ID 
