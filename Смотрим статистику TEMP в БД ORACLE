@@ -1,0 +1,32 @@
+select 
+   s.sid || ',' || s.serial# sid_n_serial, 
+   s.username, 
+   s.osuser, 
+   p.spid, 
+   s.module,
+   p.program, 
+   sum (t.blocks) * tbs.block_size / 1024 / 1024 mb_used, 
+   t.tablespace,
+   count(*) nbr_statements
+from 
+   v$sort_usage    t, 
+   v$session       s, 
+   dba_tablespaces tbs, 
+   v$process       p
+where 
+   t.session_addr = s.saddr
+and 
+   s.paddr = p.addr
+and 
+   t.tablespace = tbs.tablespace_name
+group by 
+   s.sid, 
+   s.serial#, 
+   s.username, 
+   s.osuser, 
+   p.spid, 
+   s.module,
+   p.program, 
+   tbs.block_size, 
+   t.tablespace
+order by mb_used desc;
