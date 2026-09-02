@@ -1,0 +1,1 @@
+SELECT * FROM table_with_column_to_search WHERE REGEXP_LIKE(varchar_col_with_non_numerics, '[^0-9]+');
