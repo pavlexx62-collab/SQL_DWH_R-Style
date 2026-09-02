@@ -1,0 +1,89 @@
+select ACTIVMOMENT, FINISHMOMENT,
+       CODE,
+       NAME,
+       STATUS,
+       ERROR,
+       DATE_EOZ,
+       sum(n1) "!", -- готов к обработке
+       sum(n4) "ok", -- выполнено 
+       sum(n3) "<-", -- в процессе 
+       sum(n2) "<-!", -- ожидание предыдущего 
+       sum(n5) "err", -- ошибка при выполнении
+       sum(n6) "err<", --ошибка в предыдущем 
+       sum(n9) "x", --прерванно 
+       listagg(NN, CHR(10)) within group(order by NN) "<- Name Activ",
+       listagg(NN2, CHR(10)) within group(order by NN2) "!-Name wait"
+  from (select ACTIVMOMENT, FINISHMOMENT, CODE,
+               NAME,
+               STATUS,
+               ERROR,
+               DATE_EOZ,
+               sum(n1) n1,
+               sum(n4) n4,
+               sum(n3) n3,
+               sum(n2) n2,
+               sum(n5) n5,
+               sum(n6) n6,
+               sum(n9) n9,
+               NN,
+               NN2
+          from (select TA.ACTIVATIONMOMENT ACTIVMOMENT, /*TA>HASERRORS,*/
+                       TA.FINISHMOMENT FINISHMOMENT,
+                       O.CODE,
+                       SUBSTR(O.NAME, 0, 30) NAME,
+                       DECODE(TA.STATUS,
+                              1,
+                              '>В ожидании',
+                              2,
+                              '--->В процессе',
+                              3,
+                              '------->Завершился') STATUS,
+                       DECODE(TA.HASERRORS, 0, '>ok', 1, '->ERROR') ERROR,
+                       TA.QUEUEDATE DATE_EOZ,
+                       ---
+                       DECODE(tao.taobjstatus, 1, '1') n1, --в ожидании
+                       DECODE(tao.taobjstatus, 4, '1') n4, -- обработано в ок
+                       DECODE(tao.taobjstatus, 3, '1') n3, -- в процессе
+                       DECODE(tao.taobjstatus, 2, '1') n2, -- ожидает предидущие
+                       DECODE(tao.taobjstatus, 5, '1') n5, -- ошибка
+                       DECODE(tao.taobjstatus, 6, '1') n6,-- ошибка предидущих
+                       DECODE(tao.taobjstatus, 9, '1') n9, --прервано
+                       (select ooo.CODE
+                          from dwh.srp_object ooo
+                         where ooo.id_object in (tao.id_queueobject)
+                           and tao.taobjstatus = 3) NN, -- список актив процесса
+                       (select ooo.code
+                          from dwh.srp_object ooo
+                         where ooo.id_object in (tao.id_queueobject)
+                           and tao.taobjstatus = 1) NN2 --список актив процесса
+                
+                  from dwh.que_taskactivation ta
+                  join dwh.que_taobject tao
+                    on tao.id_taskactivation = ta.id_taskactivation,
+                 dwh.srp_object o
+                 where ta.id_task = o.id_object
+                   and --o.code ='TMP_TMP'and 
+                       ta.STATUS in (2, 3, 1) --2 в процессе, 1 в ожидании, 3 завершено
+                   and ta.activationmoment > (sysdate - 6) -- глубина по дате 
+                   and o.code in (Select distinct w.code
+                                    from dwh.srp_object w
+                                   where --w.code like 'Load%'
+                                   w.code in ('RSHB_LOAD_DAILY','RSHB_LOAD_SOFR_SH')))
+         group by ACTIVMOMENT, FINISHMOMENT,
+                  CODE,
+                  NAME,
+                  STATUS,
+                  ERROR,
+                  DATE_EOZ,
+                  n1,
+                  n2,
+                  n3,
+                  n4,
+                  n5,
+                  n6,
+                  n9,
+                  NN,
+                  NN2
+         order by code, ACTIVMOMENT desc)
+ group by ACTIVMOMENT,FINISHMOMENT, CODE, NAME, STATUS, ERROR, DATE_EOZ
+ order by code, ACTIVMOMENT desc
